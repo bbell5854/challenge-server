@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/socket.io": "^2.1.4",
+    "dynamoose": "^1.11.1",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
