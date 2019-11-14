@@ -1,20 +1,15 @@
-const initConnectionTopics = (socket: SocketIO.Socket) => {
+import factory from "./factory";
+
+const connectionTopic = (socket: SocketIO.Socket) => {
   console.log("Client connected");
 
-  // Init topics for this specific connection
-  socket.on("test", () => {
-    console.log("Test Message Received");
-
-    socket.emit("test", {
-      message: "Test Message Received"
-    });
-  });
+  factory.initTopics(socket);
 
   socket.on("disconnect", () => console.log("Client disconnected"));
 };
 
 const initConnectionListener = (io: SocketIO.Server) => {
-  io.on("connect", initConnectionTopics);
+  io.on("connect", connectionTopic);
 };
 
 export default initConnectionListener;
