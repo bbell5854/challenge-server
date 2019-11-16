@@ -1,4 +1,8 @@
-import Factory from '../models/factory';
+import uuid from "uuid/v4";
+import Factory from "../models/factory";
+import logger from "../utils/logger";
+import nodes from "../utils/nodes";
+
 const FACTORY_PREFIX = "factory";
 
 interface ICreateRequest {
@@ -9,7 +13,7 @@ interface ICreateRequest {
 }
 
 interface IUpdateRequest {
-  guid: string;
+  factoryId: string;
   name: string;
   count: number;
   upperBound: number;
@@ -17,68 +21,65 @@ interface IUpdateRequest {
 }
 
 interface IRegenerateRequest {
-  guid: string;
+  factoryId: string;
 }
 
 interface IDisableRequest {
-  guid: string;
+  factoryId: string;
 }
 
-function generateChildNodes(count: number, upperBound: number, lowerBound: number): Array<number> {
-  const childNodes = [];
+async function create(payload: ICreateRequest): Promise<void> {
+  // TODO: Need better validation here
+  if (!payload || !payload.count || !payload.upperBound || !payload.lowerBound) {
+    logger.debug("Invalid or missing values");
 
-  for (let i = 0; i < count; i++) {
-    const randNumb = Math.floor(Math.random() * (upperBound - lowerBound) + lowerBound);
-    childNodes.push(randNumb);
+    // TODO: Should respond to the client with an error
+    return;
   }
 
-  return childNodes.sort((a, b) => (a - b));
-};
-
-async function create(payload: ICreateRequest): Promise<void> {
-  console.log("create received");
   try {
-    if (!payload || !payload.count || !payload.upperBound || !payload.lowerBound) {
-      throw new Error('Invalid or missing parameters');
-    }
-
-    const childNodes = generateChildNodes(payload.count, payload.upperBound, payload.lowerBound);
+    const factoryId = uuid();
+    const childNodes = nodes.generate(payload.count, payload.upperBound, payload.lowerBound);
 
     const factory = new Factory({
+      factoryId,
       name: payload.name,
+      active: true,
       count: payload.count,
       upperBound: payload.upperBound,
       lowerBound: payload.lowerBound,
       childNodes,
-      active: true
     });
 
     await factory.save();
 
   // TODO: Megaphone to all clients
   } catch (err) {
-    console.error(err);
+    logger.error(err);
+
+    // TODO: Should respond to the client with the error
   }
-};
+}
 
 function update(payload: IUpdateRequest): void {
-};
+  logger.debug("update received");
+}
 
 function regenerate(payload: IRegenerateRequest): void {
-  console.log("regen received");
-};
+  logger.debug("regen received");
+}
 
 function disable(payload: IDisableRequest): void {
-  console.log("disable received");
-};
+  logger.debug("disable received");
+}
 
 function initTopics(socket: SocketIO.Socket): void {
   socket.on(`${FACTORY_PREFIX}.create`, create);
   socket.on(`${FACTORY_PREFIX}.disable`, disable);
   socket.on(`${FACTORY_PREFIX}.regenerate`, regenerate);
   socket.on(`${FACTORY_PREFIX}.update`, update);
-};
+}
 
 export default {
-  initTopics
+  initTopics,
 };

@@ -1,9 +1,10 @@
+import logger from "../utils/logger";
 import factory from "./factory";
 
 const connectionTopic = (socket: SocketIO.Socket): void => {
-  console.log("Client connected");
+  logger.debug("Client connected");
   factory.initTopics(socket);
-  socket.on("disconnect", () => console.log("Client disconnected"));
+  socket.on("disconnect", () => logger.debug("Client disconnected"));
 
   const session = {};
   socket.emit("session", session);

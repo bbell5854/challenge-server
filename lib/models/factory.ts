@@ -1,36 +1,36 @@
-import { Schema, model } from 'dynamoose';
+import db from "../database";
 
-const factorySchema = new Schema({
+const factorySchema = new db.Schema({
   factoryId: {
-    type: Number,
-    hashKey: true
+    type: String,
+    hashKey: true,
   },
   name: {
     type: String,
-    required: true
-  },
-  count: {
-    type: String,
-    required: true
-  },
-  upperBound: {
-    type: String,
-    required: true
-  },
-  lowerBound: {
-    type: String,
-    required: true
-  },
-  childNodes: {
-    type: [Number],
-    default: []
+    required: true,
   },
   active: {
     type: Boolean,
-    index: true
-  }
+    default: false,
+  },
+  count: {
+    type: Number,
+    required: true,
+  },
+  upperBound: {
+    type: Number,
+    required: true,
+  },
+  lowerBound: {
+    type: Number,
+    required: true,
+  },
+  childNodes: {
+    type: [Number],
+    default: [],
+  },
 });
 
-const Factory = model('Factory', factorySchema);
+const Factory = db.model("Factory", factorySchema);
 
 export default Factory;
