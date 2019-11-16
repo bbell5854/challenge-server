@@ -29,6 +29,7 @@ interface IDisableRequest {
 }
 
 async function create(payload: ICreateRequest): Promise<void> {
+  logger.debug(`Received: ${FACTORY_PREFIX}.create`);
   // TODO: Need better validation here
   if (!payload || !payload.count || !payload.upperBound || !payload.lowerBound) {
     logger.debug("Invalid or missing values");
@@ -62,15 +63,15 @@ async function create(payload: ICreateRequest): Promise<void> {
 }
 
 function update(payload: IUpdateRequest): void {
-  logger.debug("update received");
+  logger.debug(`Received: ${FACTORY_PREFIX}.update`);
 }
 
 function regenerate(payload: IRegenerateRequest): void {
-  logger.debug("regen received");
+  logger.debug(`Received: ${FACTORY_PREFIX}.regenerate`);
 }
 
 function disable(payload: IDisableRequest): void {
-  logger.debug("disable received");
+  logger.debug(`Received: ${FACTORY_PREFIX}.disable`);
 }
 
 function initTopics(socket: SocketIO.Socket): void {
