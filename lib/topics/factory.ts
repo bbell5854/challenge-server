@@ -1,4 +1,5 @@
 import uuid from "uuid/v4";
+import megaphone from "../megaphone";
 import Factory from "../models/factory";
 import logger from "../utils/logger";
 import nodes from "../utils/nodes";
@@ -54,7 +55,8 @@ async function create(payload: ICreateRequest): Promise<void> {
 
     await factory.save();
 
-  // TODO: Megaphone to all clients
+    const activeFactories = await Factory.scan("active").eq(true).exec();
+    megaphone.emitSession(activeFactories);
   } catch (err) {
     logger.error(err);
 
