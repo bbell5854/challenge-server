@@ -1,86 +1,179 @@
 import uuid from "uuid/v4";
 import megaphone from "../megaphone";
-import Factory from "../models/factory";
+import Factory, { IFactory } from "../models/factory";
 import logger from "../utils/logger";
 import nodes from "../utils/nodes";
 
 const FACTORY_PREFIX = "factory";
 
-interface ICreateRequest {
-  name: string;
-  count: number;
-  upperBound: number;
-  lowerBound: number;
+function createWrapper(socket: SocketIO.Socket) {
+  return async function create(payload: IFactory): Promise<void> {
+    logger.debug(`Received: ${FACTORY_PREFIX}.create`);
+
+    if (!payload || !payload.count || !payload.upperBound || !payload.lowerBound) {
+      logger.debug("Invalid or missing values");
+
+      socket.emit(`${FACTORY_PREFIX}.create.response`, {
+        message: "Invalid or missing values",
+        err: true,
+      });
+      return;
+    }
+
+    try {
+      const factoryId = uuid();
+      const childNodes = nodes.generate(payload.count, payload.upperBound, payload.lowerBound);
+
+      const factory = new Factory({
+        factoryId,
+        name: payload.name,
+        count: payload.count,
+        upperBound: payload.upperBound,
+        lowerBound: payload.lowerBound,
+        childNodes,
+      });
+
+      await factory.save();
+
+      const activeFactories = await Factory.scan().exec();
+      megaphone.emitSession(activeFactories);
+    } catch (err) {
+      logger.error(err);
+
+      socket.emit(`${FACTORY_PREFIX}.create.response`, {
+        message: "Internal server error",
+        err: true,
+      });
+    }
+  };
 }
 
-interface IUpdateRequest {
-  factoryId: string;
-  name: string;
-  count: number;
-  upperBound: number;
-  lowerBound: number;
+function updateWrapper(socket: SocketIO.Socket) {
+  return async function update(payload: IFactory): Promise<void> {
+    logger.debug(`Received: ${FACTORY_PREFIX}.update`);
+
+    if (!payload || !payload.factoryId) {
+      logger.debug("Invalid or missing values");
+
+      socket.emit(`${FACTORY_PREFIX}.create.response`, {
+        message: "Invalid or missing values",
+        err: true,
+      });
+      return;
+    }
+
+    try {
+      const oldFactory = await Factory.get(payload.factoryId);
+      if (!oldFactory) {
+        socket.emit(`${FACTORY_PREFIX}.regenerate.response`, {
+          message: "Invalid factoryId",
+          err: true,
+        });
+
+        return;
+      }
+
+      const factory = {
+        ...oldFactory,
+        ...payload,
+      };
+
+      const childNodes = nodes.generate(factory.count, factory.upperBound, factory.lowerBound);
+      factory.childNodes = childNodes;
+
+      await Factory.update(payload.factoryId, factory);
+
+      const activeFactories = await Factory.scan().exec();
+      megaphone.emitSession(activeFactories);
+    } catch (err) {
+      logger.error(err);
+
+      socket.emit(`${FACTORY_PREFIX}.create.response`, {
+        message: "Internal server error",
+        err: true,
+      });
+    }
+  };
 }
 
-interface IRegenerateRequest {
-  factoryId: string;
+function regenerateWrapper(socket: SocketIO.Socket) {
+  return async function regenerate(payload: IFactory): Promise<void> {
+    logger.debug(`Received: ${FACTORY_PREFIX}.regenerate`);
+
+    if (!payload || !payload.factoryId) {
+      logger.debug("Invalid or missing values");
+
+      socket.emit(`${FACTORY_PREFIX}.regenerate.response`, {
+        message: "Invalid or missing values",
+        err: true,
+      });
+      return;
+    }
+
+    try {
+      const factory = await Factory.get(payload.factoryId);
+      if (!factory) {
+        socket.emit(`${FACTORY_PREFIX}.regenerate.response`, {
+          message: "Invalid factoryId",
+          err: true,
+        });
+
+        return;
+      }
+
+      const childNodes = nodes.generate(factory.count, factory.upperBound, factory.lowerBound);
+      factory.childNodes = childNodes;
+
+      await factory.save();
+
+      const activeFactories = await Factory.scan().exec();
+      megaphone.emitSession(activeFactories);
+    } catch (err) {
+      logger.error(err);
+
+      socket.emit(`${FACTORY_PREFIX}.regenerate.response`, {
+        message: "Internal server error",
+        err: true,
+      });
+    }
+  };
 }
 
-interface IDisableRequest {
-  factoryId: string;
-}
+function disableWrapper(socket: SocketIO.Socket) {
+  return async function disable(payload: IFactory): Promise<void> {
+    logger.debug(`Received: ${FACTORY_PREFIX}.disable`);
 
-async function create(payload: ICreateRequest): Promise<void> {
-  logger.debug(`Received: ${FACTORY_PREFIX}.create`);
-  // TODO: Need better validation here
-  if (!payload || !payload.count || !payload.upperBound || !payload.lowerBound) {
-    logger.debug("Invalid or missing values");
+    if (!payload || !payload.factoryId) {
+      logger.debug("Invalid or missing values");
 
-    // TODO: Should respond to the client with an error
-    return;
-  }
+      socket.emit(`${FACTORY_PREFIX}.disable.response`, {
+        message: "Invalid or missing values",
+        err: true,
+      });
+      return;
+    }
 
-  try {
-    const factoryId = uuid();
-    const childNodes = nodes.generate(payload.count, payload.upperBound, payload.lowerBound);
+    try {
+      await Factory.delete(payload.factoryId);
 
-    const factory = new Factory({
-      factoryId,
-      name: payload.name,
-      active: true,
-      count: payload.count,
-      upperBound: payload.upperBound,
-      lowerBound: payload.lowerBound,
-      childNodes,
-    });
+      const activeFactories = await Factory.scan().exec();
+      megaphone.emitSession(activeFactories);
+    } catch (err) {
+      logger.error(err);
 
-    await factory.save();
-
-    const activeFactories = await Factory.scan("active").eq(true).exec();
-    megaphone.emitSession(activeFactories);
-  } catch (err) {
-    logger.error(err);
-
-    // TODO: Should respond to the client with the error
-  }
-}
-
-function update(payload: IUpdateRequest): void {
-  logger.debug(`Received: ${FACTORY_PREFIX}.update`);
-}
-
-function regenerate(payload: IRegenerateRequest): void {
-  logger.debug(`Received: ${FACTORY_PREFIX}.regenerate`);
-}
-
-function disable(payload: IDisableRequest): void {
-  logger.debug(`Received: ${FACTORY_PREFIX}.disable`);
+      socket.emit(`${FACTORY_PREFIX}.disable.response`, {
+        message: "Internal server error",
+        err: true,
+      });
+    }
+  };
 }
 
 function initTopics(socket: SocketIO.Socket): void {
-  socket.on(`${FACTORY_PREFIX}.create`, create);
-  socket.on(`${FACTORY_PREFIX}.disable`, disable);
-  socket.on(`${FACTORY_PREFIX}.regenerate`, regenerate);
-  socket.on(`${FACTORY_PREFIX}.update`, update);
+  socket.on(`${FACTORY_PREFIX}.create`, createWrapper(socket));
+  socket.on(`${FACTORY_PREFIX}.disable`, disableWrapper(socket));
+  socket.on(`${FACTORY_PREFIX}.regenerate`, regenerateWrapper(socket));
+  socket.on(`${FACTORY_PREFIX}.update`, updateWrapper(socket));
 }
 
 export default {

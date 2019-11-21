@@ -1,5 +1,14 @@
 import db from "../database";
 
+export interface IFactory {
+  factoryId: string;
+  name: string;
+  count: number;
+  upperBound: number;
+  lowerBound: number;
+  childNodes: number[];
+}
+
 const factorySchema = new db.Schema({
   factoryId: {
     type: String,
@@ -31,6 +40,6 @@ const factorySchema = new db.Schema({
   },
 });
 
-const Factory = db.model("Factory", factorySchema);
+const Factory = db.model<IFactory, string>("Factory", factorySchema);
 
 export default Factory;

@@ -8,11 +8,15 @@ async function connect(socket: SocketIO.Socket): Promise<void> {
   socket.on("disconnect", () => logger.debug("Client disconnected"));
 
   try {
-    const activeFactories = await Factory.scan("active").eq(true).exec();
+    const activeFactories = await Factory.scan().exec();
     socket.emit("session.send", activeFactories);
   } catch (err) {
     logger.error(err);
-    // TODO: Emit error to client
+
+    socket.emit(`session.send.error`, {
+      message: "Internal server error",
+      err: true,
+    });
   }
 }
 

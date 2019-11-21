@@ -1,3 +1,5 @@
+import { IFactory } from "../models/factory";
+
 let instance: SocketIO.Server;
 
 export function initMegaphone(io: SocketIO.Server) {
@@ -6,8 +8,7 @@ export function initMegaphone(io: SocketIO.Server) {
   }
 }
 
-// TODO: Change type to array of Factory's
-function emitSession(payload: object) {
+function emitSession(payload: IFactory[]) {
   instance.sockets.emit("session.send", payload);
 }
 
