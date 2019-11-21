@@ -20,6 +20,11 @@ function createWrapper(socket: SocketIO.Socket) {
       return;
     }
 
+    // The UI should validate this, so if we get to this point lets default to the max.
+    if (payload.count > 15) {
+      payload.count = 15;
+    }
+
     try {
       const factoryId = uuid();
       const childNodes = nodes.generate(payload.count, payload.upperBound, payload.lowerBound);
@@ -60,6 +65,11 @@ function updateWrapper(socket: SocketIO.Socket) {
         err: true,
       });
       return;
+    }
+
+    // The UI should validate this, so if we get to this point lets default to the max.
+    if (payload.count > 15) {
+      payload.count = 15;
     }
 
     try {
