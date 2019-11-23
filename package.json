@@ -1,7 +1,11 @@
 {
   "name": "challenge-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "challenge-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbell5854/challenge-server.git"
+  },
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",

@@ -7,7 +7,18 @@ import logger from "./lib/utils/logger";
 
 const PORT = 8080;
 
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+  const { url } = req;
+
+  const healthObj = {
+    status: "OK",
+  };
+
+  if (url === "/health") {
+    res.write(JSON.stringify(healthObj));
+    res.end();
+  }
+});
 const io = SocketIO(server);
 
 initMegaphone(io);
