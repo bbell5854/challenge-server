@@ -9,6 +9,19 @@ function generate(count: number, upperBound: number, lowerBound: number): number
   return nodes.sort((a, b) => (a - b));
 }
 
+function minMaxCount(count: number): number {
+  if (count < 1) {
+    return 1;
+  }
+
+  if (count > 15) {
+    return 15;
+  }
+
+  return count;
+}
+
 export default {
   generate,
+  minMaxCount,
 };
