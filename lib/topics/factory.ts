@@ -16,9 +16,12 @@ function createWrapper(socket: SocketIO.Socket) {
 
     if (
       !payload ||
+      !payload.name ||
       !payload.count ||
       !payload.upperBound ||
-      !payload.lowerBound
+      !payload.lowerBound ||
+      payload.lowerBound > payload.upperBound ||
+      payload.upperBound < payload.lowerBound
     ) {
       logger.debug("Invalid or missing values");
 
@@ -66,7 +69,16 @@ function updateWrapper(socket: SocketIO.Socket) {
   return async function update(payload: IFactory): Promise<void> {
     logger.debug(`Received: ${FACTORY_UPDATE_TOPIC}`);
 
-    if (!payload || !payload.factoryId) {
+    if (
+      !payload ||
+      !payload.factoryId ||
+      !payload.name ||
+      !payload.count ||
+      !payload.upperBound ||
+      !payload.lowerBound ||
+      payload.lowerBound > payload.upperBound ||
+      payload.upperBound < payload.lowerBound
+    ) {
       logger.debug("Invalid or missing values");
 
       socket.emit(ERROR_RESPONSE_TOPIC, {
