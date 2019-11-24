@@ -19,6 +19,7 @@ const server = http.createServer((req, res) => {
     res.end();
   }
 });
+
 const io = SocketIO(server);
 
 initMegaphone(io);
