@@ -1,0 +1,32 @@
+{
+  "name": "challenge-server",
+  "version": "1.0.0",
+  "description": "challenge-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbell5854/challenge-server.git"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bunyan": "^1.8.12",
+    "dynamoose": "^1.11.1",
+    "socket.io": "^2.3.0",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.6",
+    "@types/uuid": "^3.4.6",
+    "@types/socket.io": "^2.1.4",
+    "typescript": "^3.6.4"
+  }
+}
