@@ -17,7 +17,6 @@ const factorySchema = new db.Schema({
   name: {
     type: String,
     required: true,
-    rangeKey: true,
   },
   count: {
     type: Number,

@@ -5,7 +5,7 @@ import { initMegaphone } from "./lib/megaphone";
 import connectionTopic from "./lib/topics/connect";
 import logger from "./lib/utils/logger";
 
-const PORT = 80;
+const PORT = 8080;
 
 const server = http.createServer((req, res) => {
   const { url } = req;
