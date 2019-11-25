@@ -18,10 +18,6 @@ const factorySchema = new db.Schema({
     type: String,
     required: true,
   },
-  active: {
-    type: Boolean,
-    default: false,
-  },
   count: {
     type: Number,
     required: true,
