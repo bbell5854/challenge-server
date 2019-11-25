@@ -17,4 +17,4 @@ ADD . /usr/src/app
 RUN tsc
 
 CMD [ "node", "." ]
-EXPOSE 80
+EXPOSE 8080
